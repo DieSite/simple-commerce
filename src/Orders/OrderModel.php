@@ -55,20 +55,24 @@ class OrderModel extends Model
                 return $this->statusLog
                     ->where('status', OrderStatus::Placed->value)
                     ->pluck('timestamp')
-                    ->last();
+                    ->first();
             },
         );
     }
-
+    
     public function scopeRunwayListing(Builder $query): Builder
     {
         return $query
-            ->leftJoin('status_log', function ($join) {
-                $join->on('status_log.order_id', '=', 'orders.id')
-                    ->where('status_log.status', 'placed');
+            ->select('orders.*')
+            ->leftJoin(DB::raw('(
+                SELECT order_id, MIN(timestamp) as status_timestamp 
+                FROM status_log 
+                WHERE status = "placed"
+                GROUP BY order_id
+            ) as latest_status'), function($join) {
+                $join->on('orders.id', '=', 'latest_status.order_id');
             })
-            ->orderByRaw('COALESCE(status_log.timestamp, orders.created_at) DESC')
-            ->select('orders.*');
+            ->orderByRaw('COALESCE(latest_status.status_timestamp, orders.created_at) DESC');
     }
 
     public function scopeRunwaySearch(Builder $query, string $searchQuery): Builder
