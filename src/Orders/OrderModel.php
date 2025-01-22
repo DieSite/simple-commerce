@@ -90,6 +90,13 @@ class OrderModel extends Model
                 $query->where('order_number', 'like', "%$searchQuery%")
                     ->orWhere('grand_total', 'like', '%' . str_replace('.', '', $searchQuery) . '%')
                     ->orWhere('items_total', 'like', '%' . str_replace('.', '', $searchQuery) . '%')
+                    ->orWhere(function($query) use ($searchQuery) {
+                        $query->where('created_at', 'like', "%$searchQuery%")
+                              ->where('order_status', '!=', 'cart');
+                    })
+                    ->orWhere('invoice_number', 'like', "%$searchQuery%")
+                    ->orWhere('phonenumer', 'like', "%$searchQuery%")
+                    ->orWhere('shipping_name', 'like', "%$searchQuery%")
                     ->orWhereRaw('JSON_UNQUOTE(customer_id) IN (?)', [implode('","', $matchingUserIds)]);
             });
 
