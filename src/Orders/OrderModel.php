@@ -95,7 +95,7 @@ class OrderModel extends Model
                               ->where('order_status', '!=', 'cart');
                     })
                     ->orWhere('invoice_number', 'like', "%$searchQuery%")
-                    ->orWhere('phonenumer', 'like', "%$searchQuery%")
+                    ->orWhere('phonenumber', 'like', "%$searchQuery%")
                     ->orWhere('shipping_name', 'like', "%$searchQuery%")
                     ->orWhereRaw('JSON_UNQUOTE(customer_id) IN (?)', [implode('","', $matchingUserIds)]);
             });
