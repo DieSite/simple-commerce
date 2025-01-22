@@ -60,7 +60,7 @@ class OrderModel extends Model
             },
         );
     }
-    
+
     public function scopeRunwayListing(Builder $query): Builder
     {
         return $query
@@ -70,7 +70,7 @@ class OrderModel extends Model
                 FROM status_log 
                 WHERE status = "placed"
                 GROUP BY order_id
-            ) as latest_status'), function($join) {
+            ) as latest_status'), function ($join) {
                 $join->on('orders.id', '=', 'latest_status.order_id');
             })
             ->orderByRaw('COALESCE(latest_status.status_timestamp, orders.created_at) DESC');
@@ -78,16 +78,21 @@ class OrderModel extends Model
 
     public function scopeRunwaySearch(Builder $query, string $searchQuery): Builder
     {
+        $matchingUserIds = \Statamic\Facades\User::query()
+            ->where('name', 'like', "%$searchQuery%")
+            ->orWhere('email', 'like', "%$searchQuery%")
+            ->get()
+            ->pluck('id')
+            ->toArray();
+
         return $query
-            ->where('order_number', 'like', "%$searchQuery%")
-            ->orWhere('grand_total', 'like', '%'.str_replace('.', '', $searchQuery).'%')
-            ->orWhere('items_total', 'like', '%'.str_replace('.', '', $searchQuery).'%')
-            ->when($this->isOrExtendsClass(SimpleCommerce::customerDriver()['repository'], EloquentCustomerRepository::class), function ($query) use ($searchQuery) {
-                $query->orWhereHas('customer', function ($query) use ($searchQuery) {
-                    $query->where('name', 'like', "%$searchQuery%")
-                        ->orWhere('email', 'like', "%$searchQuery%");
-                });
+            ->where(function ($query) use ($searchQuery, $matchingUserIds) {
+                $query->where('order_number', 'like', "%$searchQuery%")
+                    ->orWhere('grand_total', 'like', '%' . str_replace('.', '', $searchQuery) . '%')
+                    ->orWhere('items_total', 'like', '%' . str_replace('.', '', $searchQuery) . '%')
+                    ->orWhereRaw('JSON_UNQUOTE(customer_id) IN (?)', [implode('","', $matchingUserIds)]);
             });
+
     }
 
     protected function isOrExtendsClass(string $class, string $classToCheckAgainst): bool
