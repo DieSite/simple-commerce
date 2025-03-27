@@ -7,6 +7,8 @@ enum PaymentStatus: string
     case Unpaid = 'unpaid';
     case Paid = 'paid';
     case Refunded = 'refunded';
+    case PartiallyRefunded = 'partially_refunded';
+
 
     public function is($paymentStatus): bool
     {
