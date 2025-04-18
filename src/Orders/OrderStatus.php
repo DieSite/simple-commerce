@@ -9,7 +9,7 @@ enum OrderStatus: string
     case Dispatched = 'dispatched';
     case Delivered = 'delivered';
     case Cancelled = 'cancelled';
-    case PartiallyRefunded = 'partially_refunded';
+    case PartiallyRefunded = 'partiallyrefunded';
 
 
     public function is($orderStatus): bool
