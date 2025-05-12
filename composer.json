@@ -61,5 +61,8 @@
             "pestphp/pest-plugin": true
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "replace": {
+        "duncanmcclean/simple-commerce": "7.8.2"
+    }
 }
