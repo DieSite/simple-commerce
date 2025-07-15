@@ -45,7 +45,6 @@ class GatewayCallbackController extends BaseActionController
         }
 
         if ($request->has('_order_id')) {
-            $order->save();
             $currentStatus = $order->status();
             if (!$currentStatus instanceof OrderStatus) {
                 $currentStatus = OrderStatus::Placed;
