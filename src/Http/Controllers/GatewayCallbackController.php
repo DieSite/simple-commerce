@@ -44,7 +44,16 @@ class GatewayCallbackController extends BaseActionController
             return $this->withErrors($request, "Order [{$order->get('title')}] has not been marked as paid yet.");
         }
 
-        $order->status(OrderStatus::Placed)->save();
+        if ($request->has('_order_id')) {
+            $order->save();
+            $currentStatus = $order->status();
+            if (!$currentStatus instanceof OrderStatus) {
+                $currentStatus = OrderStatus::Placed;
+            }
+            $order->updateOrderStatus($currentStatus, ['reason' => 'Gateway callback received', ['data' => $request->all()]]);
+        } else {
+            $order->status(OrderStatus::Placed)->save();
+        }
 
         $this->forgetCart();
 
